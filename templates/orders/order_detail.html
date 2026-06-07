@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Order - {{ po.po_number }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="torino-brand">Order {{ po.po_number }}</h1>
+        <a href="{{ url_for('orders.orders_list') }}" class="btn btn-secondary">← Back to Orders</a>
+    </div>
+
+    {% if po.is_archived %}
+    <div class="alert alert-secondary">
+        <strong>Archived Order</strong>
+    </div>
+    {% endif %}
+
+    {% if po.project %}
+    <div class="alert alert-info">
+        <strong>Linked to Project:</strong>
+        <a href="{{ url_for('projects.project_detail', project_id=po.project.id) }}" class="text-decoration-none">
+            #{{ po.project.id }} — {{ po.project.project_name or 'Untitled Project' }}
+        </a>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('orders.update_order', po_id=po.id) }}">
+                {{ csrf_token() }}
+                <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        {% for status in ORDER_STATUSES %}
+                        <option value="{{ status }}" {% if po.status == status %}selected{% endif %}>{{ status }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Arrival Date</label>
+                    <input type="date" name="arrival_date" class="form-control" value="{{ po.arrival_date }}">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

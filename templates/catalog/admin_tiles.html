@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Tile Catalog{% endblock %}
+
+{% block content %}
+<h2>Tile Catalog</h2>
+<input type="text" id="liveFilter" class="form-control mb-3" placeholder="Search series, size, color..." onkeyup="filterTiles()">
+
+<a href="{{ url_for('catalog.add_tile') }}" class="btn btn-primary mb-3">Add New Tile</a>
+<a href="{{ url_for('catalog.import_tiles') }}" class="btn btn-success mb-3">Import CSV / QB</a>
+
+{% for series in series_list %}
+<div class="card mb-4 tile-card" data-search="{{ series.collection }} {{ series.series }} {{ series.supplier }}">
+    <div class="card-header">
+        <strong>{{ series.collection }} — {{ series.series }}</strong>
+        <small class="text-muted">({{ series.supplier }})</small>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for v in series.variants %}
+            <div class="col-md-3 mb-3 variant-card" data-search="{{ v.size }} {{ v.finish }} {{ v.color }}">
+                <div class="card h-100">
+                    {% if v.photo %}
+                    <img src="{{ url_for('static', filename='tiles/' + v.photo) }}" class="card-img-top" style="height:180px; object-fit:cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h6>{{ v.size }} — {{ v.finish }} — {{ v.color }}</h6>
+                        <p class="mb-1">
+                            <strong>${{ v.selling_price }}</strong> / sqft<br>
+                            <small>{{ v.sqft_per_box }} sqft/box</small>
+                        </p>
+                        <a href="{{ url_for('catalog.tile_detail', tile_id=v.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+function filterTiles() {
+    const term = document.getElementById('liveFilter').value.toLowerCase().trim();
+    document.querySelectorAll('.tile-card').forEach(card => {
+        const cardText = card.getAttribute('data-search').toLowerCase();
+        const variants = card.querySelectorAll('.variant-card');
+        let showCard = false;
+
+        variants.forEach(v => {
+            const vText = v.getAttribute('data-search').toLowerCase();
+            if (vText.includes(term)) {
+                v.style.display = 'block';
+                showCard = true;
+            } else {
+                v.style.display = 'none';
+            }
+        });
+
+        card.style.display = showCard || cardText.includes(term) ? 'block' : 'none';
+    });
+}
+</script>
+{% endblock %}

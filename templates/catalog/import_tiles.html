@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Bulk Upload - Torino Tiles{% endblock %}
+
+{% block content %}
+<div class="container mt-4" data-bs-theme="dark">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-white">⬆️ Bulk Upload</h1>
+        <a href="{{ url_for('catalog.admin_catalog') }}" class="btn btn-primary">📋 View Catalog</a>
+    </div>
+
+    <div class="card border-secondary">
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">   <!-- CSRF fixed as hidden input -->
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label text-white">Supplier</label>
+                        <select name="supplier" class="form-select bg-dark text-white" required>
+                            {% for s in suppliers %}
+                            <option value="{{ s }}">{{ s }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label text-white">CSV or Excel File</label>
+                        <input type="file" name="csv_file" class="form-control bg-dark text-white" accept=".csv,.xlsx" required>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-success w-100">Import Now</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

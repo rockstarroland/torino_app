@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Jobs{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between mb-4">
+    <h2>Jobs</h2>
+    <a href="{{ url_for('projects.new_job') }}" class="btn btn-warning">+ New Job</a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-dark mb-0">
+            <thead>
+                <tr>
+                    <th>Job #</th>
+                    <th>Customer</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in jobs %}
+                <tr>
+                    <td><a href="{{ url_for('projects.job_detail', job_id=job.id) }}">{{ job.job_number }}</a></td>
+                    <td>{{ job.customer.name }}</td>
+                    <td><span class="badge bg-secondary">{{ job.status }}</span></td>
+                    <td>{{ job.created_at.strftime('%b %d') }}</td>
+                    <td><a href="{{ url_for('projects.job_detail', job_id=job.id) }}" class="btn btn-sm btn-outline-light">View</a></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-muted text-center py-4">No jobs yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

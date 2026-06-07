@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Add Installer{% endblock %}
+
+{% block content %}
+<h2>Add Installer</h2>
+<form method="POST">
+    {{ csrf_token() }}
+    <input type="text" name="name" placeholder="Name" class="form-control mb-2" required>
+    <input type="tel" name="phone" placeholder="Phone" class="form-control mb-2">
+    <input type="email" name="email" placeholder="Email" class="form-control mb-2">
+    <textarea name="notes" placeholder="Notes" class="form-control mb-3"></textarea>
+    <button type="submit" class="btn btn-primary">Save Installer</button>
+</form>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Installers{% endblock %}
+
+{% block content %}
+<h2>Installers</h2>
+<a href="{{ url_for('installers.add_installer') }}" class="btn btn-primary mb-3">Add New Installer</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for installer in installers %}
+        <tr>
+            <td>{{ installer.name }}</td>
+            <td>{{ installer.phone or '-' }}</td>
+            <td>{{ installer.email or '-' }}</td>
+            <td>
+                <a href="{{ url_for('installers.edit_installer', installer_id=installer.id) }}" class="btn btn-sm btn-warning">Edit</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

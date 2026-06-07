@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}2D Tile Layout Visualizer - Torino Tiles{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h2 class="mb-0">📐 2D Tile Layout Visualizer</h2>
+        <a href="{{ url_for('estimates.estimate_builder') }}" class="btn btn-outline-secondary">← Back to Estimate</a>
+    </div>
+
+    <ul class="nav nav-pills nav-fill mb-4 shadow-sm" id="room-tabs">
+        <li class="nav-item"><a onclick="setRoom(0)" id="tab-0" class="nav-link active">🚿 Shower</a></li>
+        <li class="nav-item"><a onclick="setRoom(1)" id="tab-1" class="nav-link">🛁 Tub Surround</a></li>
+        <li class="nav-item"><a onclick="setRoom(2)" id="tab-2" class="nav-link">🍳 Backsplash</a></li>
+    </ul>
+
+    <div class="row g-3">
+        <div class="col-lg-7 col-12">
+            <div class="card shadow-sm" style="background:#f8f9fa; border-radius:16px; min-height:460px;">
+                <div id="preview" class="p-4" style="height:380px; display:flex; align-items:center; justify-content:center; background:#fff; border-radius:0 0 16px 16px;">
+                    <div id="room-visual" style="width:100%; max-width:560px; height:320px; border:8px solid #333; background:#e9ecef; position:relative; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+                    </div>
+                </div>
+                <div class="p-3 bg-white border-top text-center small">
+                    <strong id="total-sqft">0.00</strong> sq ft
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5 col-12">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="row g-2 mb-4">
+                        <div class="col-4"><label class="form-label small">Width (in)</label><input id="dim-width" type="number" value="60" class="form-control" oninput="redraw()"></div>
+                        <div class="col-4"><label class="form-label small">Height (in)</label><input id="dim-height" type="number" value="80" class="form-control" oninput="redraw()"></div>
+                        <div class="col-4"><label class="form-label small">Depth (in)</label><input id="dim-depth" type="number" value="36" class="form-control" oninput="redraw()"></div>
+                    </div>
+
+                    <h6 class="mb-2">Select Tile</h6>
+                    <input type="text" id="viz-filter" class="form-control mb-3" placeholder="Search tiles..." onkeyup="filterTiles()">
+                    <div id="tile-list" class="row g-3" style="max-height:240px; overflow-y:auto;"></div>
+
+                    <button onclick="saveDesign()" class="btn btn-success w-100 mt-4 py-3">💾 Save This Surface Design</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const allSeries = {{ series_list | tojson | safe }};
+    let currentTile = null;
+    let currentRoom = 1;
+
+    function setRoom(n) {
+        currentRoom = n;
+        document.querySelectorAll('#room-tabs a').forEach(a => a.classList.remove('active'));
+        document.getElementById('tab-' + n).classList.add('active');
+        redraw();
+    }
+
+    function redraw() {
+        const visual = document.getElementById('room-visual');
+        const w = parseFloat(document.getElementById('dim-width').value) || 60;
+        const h = parseFloat(document.getElementById('dim-height').value) || 80;
+        const sqft = ((w * h) / 144).toFixed(2);
+        document.getElementById('total-sqft').textContent = sqft;
+
+        if (!currentTile) {
+            visual.innerHTML = `<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#888;font-size:1.2rem;">Select a tile on the right</div>`;
+            return;
+        }
+
+        if (currentTile.photo) {
+            visual.style.backgroundImage = `url('/static/tiles/${currentTile.photo}')`;
+            visual.style.backgroundSize = 'repeat';
+        } else {
+            visual.style.background = '#ccc';
+        }
+    }
+
+    function selectTile(id) {
+        allSeries.forEach(s => {
+            const found = s.variants.find(v => v.id === id);
+            if (found) currentTile = found;
+        });
+        redraw();
+    }
+
+    function filterTiles() {
+        const term = document.getElementById('viz-filter').value.toLowerCase().trim();
+        const filtered = term
+            ? allSeries.filter(s => s.series.toLowerCase().includes(term) || s.variants.some(v => `${v.size} ${v.finish||''} ${v.color||''}`.toLowerCase().includes(term)))
+            : allSeries;
+        renderTiles(filtered);
+    }
+
+    function renderTiles(filtered) {
+        const container = document.getElementById('tile-list');
+        container.innerHTML = '';
+        filtered.forEach(series => {
+            series.variants.forEach(v => {
+                if (v.is_labour) return;
+                const div = document.createElement('div');
+                div.className = 'col-6 col-sm-4';
+                div.innerHTML = `
+                    <div onclick="selectTile(${v.id});" class="card h-100 border-0 shadow-sm" style="cursor:pointer;">
+                        <div class="card-body p-2 text-center">
+                            ${v.photo ? `<img src="/static/tiles/${v.photo}" style="width:100%;height:110px;object-fit:cover;border-radius:8px;">` : `<div style="height:110px;background:#e9ecef;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:#888;">No photo</div>`}
+                            <div class="mt-2 small fw-bold">${v.size} • ${v.finish||''}</div>
+                            <div class="text-success fw-bold">$${v.selling_price.toFixed(2)}</div>
+                        </div>
+                    </div>`;
+                container.appendChild(div);
+            });
+        });
+    }
+
+    function saveDesign() {
+        if (!currentTile) {
+            alert("Please select a tile first.");
+            return;
+        }
+        const w = parseFloat(document.getElementById('dim-width').value) || 60;
+        const h = parseFloat(document.getElementById('dim-height').value) || 80;
+        const sqft = ((w * h) / 144).toFixed(2);
+
+        const design = {
+            name: `2D ${['Shower','Tub Surround','Backsplash'][currentRoom]} - ${currentTile.size}`,
+            qty: parseFloat(sqft),
+            price: currentTile.selling_price,
+            unit: 'sqft',
+            is_labour: false
+        };
+
+        let pending = JSON.parse(localStorage.getItem('pendingVisualDesigns') || '[]');
+        pending.push(design);
+        localStorage.setItem('pendingVisualDesigns', JSON.stringify(pending));
+
+        alert(`✅ Design saved! (${sqft} sq ft)`);
+        window.location.href = "{{ url_for('estimates.estimate_builder') }}";
+    }
+
+    window.onload = function() {
+        renderTiles(allSeries);
+        redraw();
+    };
+</script>
+{% endblock %}

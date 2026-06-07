@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}{{ tile.series.collection }} — {{ tile.series.series }} • {{ tile.size }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">{{ tile.series.collection }} — {{ tile.series.series }}</h2>
+            <h5 class="text-muted">{{ tile.size }}{% if tile.color %} • {{ tile.color }}{% endif %}</h5>
+        </div>
+        <a href="{{ url_for('catalog.series_detail', series_id=tile.series.id) }}" class="btn btn-outline-secondary">← Back to Series</a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-5 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    {% if tile.photo %}
+                        <img id="current-photo" src="{{ url_for('static', filename='tiles/' + tile.photo) }}"
+                             class="img-fluid rounded shadow-sm mb-3" style="max-height: 320px; object-fit: cover;">
+                        <p class="text-success small">✅ Current photo</p>
+                    {% else %}
+                        <div id="current-photo" class="bg-light border rounded d-flex align-items-center justify-content-center mb-3" style="height: 320px;">
+                            <p class="text-muted">No photo yet</p>
+                        </div>
+                    {% endif %}
+
+                    <form method="POST" enctype="multipart/form-data" id="photo-form">
+                        {{ csrf_token() }}
+                        <div class="mb-3">
+                            <label class="form-label">Upload / Replace Photo</label>
+                            <input type="file" name="photo" id="photo-input" class="form-control" accept="image/*">
+                            <small class="text-muted">JPG, PNG, WebP — saved to /static/tiles/</small>
+                        </div>
+
+                        <div id="preview-container" class="border rounded p-3 bg-light mb-3" style="min-height: 160px; display:none;">
+                            <p class="small text-muted mb-1">New photo preview:</p>
+                            <img id="photo-preview" style="max-width:100%; max-height:140px; border-radius:6px;">
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">Save Photo</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('catalog.tile_detail', tile_id=tile.id) }}">
+                        {{ csrf_token() }}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Size</label>
+                                <input type="text" name="size" value="{{ tile.size }}" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Finish</label>
+                                <input type="text" name="finish" value="{{ tile.finish or '' }}" class="form-control">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Color</label>
+                                <input type="text" name="color" value="{{ tile.color or '' }}" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Price</label>
+                                <input type="number" step="0.01" name="price" value="{{ tile.price }}" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">SqFt per Box</label>
+                                <input type="number" step="0.01" name="sqft_per_box" value="{{ tile.sqft_per_box }}" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Unit</label>
+                                <select name="unit" class="form-select">
+                                    <option value="each" {{ 'selected' if tile.unit=='each' else '' }}>Each</option>
+                                    <option value="sqft" {{ 'selected' if tile.unit=='sqft' else '' }}>sqft</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Save Tile Details</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const input = document.getElementById('photo-input');
+    const previewContainer = document.getElementById('preview-container');
+    const previewImg = document.getElementById('photo-preview');
+
+    input.addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                previewImg.src = ev.target.result;
+                previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+</script>
+{% endblock %}

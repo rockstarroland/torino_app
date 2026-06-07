@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Orders / Invoices{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="torino-brand">Orders / Invoices</h1>
+        <div>
+            <a href="{{ url_for('orders.orders_list') }}?archived=1" class="btn btn-secondary">
+                {% if request.args.get('archived') %}Show Active{% else %}Show Archived{% endif %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Status Filter Buttons -->
+    <div class="mb-4">
+        <a href="{{ url_for('orders.orders_list') }}" class="btn btn-sm {% if not request.args.get('status') and not request.args.get('archived') %}btn-primary{% else %}btn-outline-primary{% endif %} me-1">
+            All Active
+        </a>
+
+        {% for status in ORDER_STATUSES %}
+            <a href="{{ url_for('orders.orders_list') }}?status={{ status|urlencode }}"
+               class="btn btn-sm {% if request.args.get('status') == status %}btn-warning{% else %}btn-outline-warning{% endif %} me-1">
+                {{ status }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>PO / Invoice #</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Arrival Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for po in purchase_orders %}
+            <tr {% if po.is_archived %}class="table-secondary"{% endif %}>
+                <td><a href="{{ url_for('orders.order_detail', po_id=po.id) }}">{{ po.po_number }}</a></td>
+                <td>{{ po.customer_name or '—' }}</td>
+                <td>
+                    <span class="badge bg-warning text-white">{{ po.status }}</span>
+                </td>
+                <td>{{ po.arrival_date or '—' }}</td>
+                <td>
+                    <a href="{{ url_for('orders.order_detail', po_id=po.id) }}" class="btn btn-sm btn-primary">View</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-light">No orders found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

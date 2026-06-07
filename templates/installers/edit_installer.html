@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Edit Installer{% endblock %}
+
+{% block content %}
+<h2>Edit Installer</h2>
+<form method="POST">
+    {{ csrf_token() }}
+    <input type="text" name="name" value="{{ installer.name }}" class="form-control mb-2" required>
+    <input type="tel" name="phone" value="{{ installer.phone or '' }}" class="form-control mb-2">
+    <input type="email" name="email" value="{{ installer.email or '' }}" class="form-control mb-2">
+    <textarea name="notes" class="form-control mb-3">{{ installer.notes or '' }}</textarea>
+    <button type="submit" class="btn btn-primary">Update Installer</button>
+</form>
+{% endblock %}

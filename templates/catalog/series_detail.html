@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ series.collection }} — {{ series.series }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">{{ series.collection }} — {{ series.series }}</h2>
+        <p class="text-muted mb-0">{{ series.supplier or '' }}</p>
+    </div>
+    <a href="{{ url_for('catalog.admin_tiles') }}" class="btn btn-outline-secondary">← Back to Catalog</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-4">
+            {% for v in series.variants %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    {% if v.photo %}
+                        <img src="{{ url_for('static', filename='tiles/' + v.photo) }}" class="card-img-top" style="height: 180px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-dark text-muted text-center py-5">No photo</div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h6 class="card-title">{{ v.size }}{% if v.color %} • {{ v.color }}{% endif %}</h6>
+                        <p class="text-muted small">{{ v.finish or 'Standard' }}</p>
+                        <div class="d-flex justify-content-between align-items-end">
+                            <div>
+                                <span class="text-success fw-bold">${{ "%.2f"|format(v.selling_price) }}</span>
+                                <small class="text-muted">/ sqft</small>
+                            </div>
+                            <a href="{{ url_for('catalog.tile_detail', tile_id=v.id) }}" class="btn btn-sm btn-outline-primary">View Details →</a>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-{{ 'success' if v.sample_status == 'In Store' else 'warning' if v.sample_status == 'Checked Out' else 'secondary' }}">
+                                {{ v.sample_status }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

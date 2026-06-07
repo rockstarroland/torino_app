@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Estimates{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Estimates</h2>
+    <a href="{{ url_for('estimates.estimate_builder') }}" class="btn btn-success">+ New Estimate</a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if estimates %}
+        <table class="table table-dark table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in estimates %}
+                <tr>
+                    <td><strong>#{{ e.id }}</strong></td>
+                    <td>{{ e.customer_name or '—' }}</td>
+                    <td>{{ e.created_at.strftime('%b %d, %Y') }}</td>
+                    <td class="text-end">
+                        <a href="{{ url_for('estimates.estimate_view', estimate_id=e.id) }}" class="btn btn-sm btn-outline-light">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="p-5 text-center text-muted">No estimates yet.<br><a href="{{ url_for('estimates.estimate_builder') }}" class="btn btn-success mt-3">Create your first estimate</a></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

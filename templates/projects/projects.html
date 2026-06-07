@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Projects{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="torino-brand">Projects</h1>
+        <div>
+            <a href="{{ url_for('projects.projects_list') }}?archived=1" class="btn btn-secondary">
+                {% if request.args.get('archived') %}Show Active{% else %}Show Archived{% endif %}
+            </a>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <a href="{{ url_for('projects.projects_list') }}" class="btn btn-sm {% if not request.args.get('status') and not request.args.get('archived') %}btn-primary{% else %}btn-outline-primary{% endif %} me-1">
+            All Active
+        </a>
+
+        {% for status in PROJECT_STATUSES %}
+            {% set color = 'success' if status == 'Completed' else 'warning' if status == 'Install Scheduled' else 'primary' if status == 'Project In Progress' else 'info' %}
+            <a href="{{ url_for('projects.projects_list') }}?status={{ status }}" class="btn btn-sm {% if request.args.get('status') == status %}btn-{{ color }}{% else %}btn-outline-{{ color }}{% endif %} me-1">
+                {{ status }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Project</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Install Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in projects %}
+            <tr {% if p.is_archived %}class="table-secondary"{% endif %}>
+                <td>
+                    <a href="{{ url_for('projects.project_detail', project_id=p.id) }}">
+                        {{ p.project_name or 'Untitled Project #' + p.id|string }}
+                    </a>
+                </td>
+                <td>{{ p.customer_name or '—' }}</td>
+                <td>
+                    <span class="badge {% if p.status == 'Completed' %}bg-success{% elif p.status == 'Install Scheduled' %}bg-warning{% elif p.status == 'Project In Progress' %}bg-primary{% elif p.status == 'Installer Assigned / Work Order Created' %}bg-info{% else %}bg-secondary{% endif %} text-white">
+                        {{ p.status }}
+                    </span>
+                </td>
+                <td>{{ p.install_scheduled_date.strftime('%b %d, %Y') if p.install_scheduled_date else '—' }}</td>
+                <td>
+                    <a href="{{ url_for('projects.project_detail', project_id=p.id) }}" class="btn btn-sm btn-primary">View</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted">No projects found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

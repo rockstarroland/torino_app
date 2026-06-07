@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Print QR Stickers{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Print QR Stickers</h2>
+        <p class="text-muted mb-0">Physical showroom samples only • {{ tiles|length }} tiles</p>
+    </div>
+    <button onclick="window.print()" class="btn btn-primary">🖨️ Print Selected</button>
+</div>
+
+<div class="row g-3" id="qr-grid">
+    {% for tile in tiles %}
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="card h-100 qr-item text-center" onclick="this.classList.toggle('border-success'); this.classList.toggle('border-3');">
+            <div class="card-body p-3">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={{ request.host_url }}qr/{{ tile.id }}"
+                     class="img-fluid mb-3" style="max-height: 180px;">
+                <div>
+                    <strong>{{ tile.series.collection }}</strong><br>
+                    <small class="text-muted">{{ tile.series.series }} • {{ tile.size }}{% if tile.color %} • {{ tile.color }}{% endif %}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5 text-muted">
+        No physical samples marked "In Store" yet.<br>
+        <a href="{{ url_for('catalog.admin_tiles') }}" class="btn btn-outline-light mt-3">Go to Catalog →</a>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+    @media print {
+        .navbar, .btn, .no-print { display: none !important; }
+        .qr-item { border: 2px solid #333 !important; page-break-inside: avoid; }
+    }
+</style>
+{% endblock %}

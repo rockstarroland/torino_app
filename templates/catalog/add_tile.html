@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Add New Tile{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Add New Tile Variant</h2>
+    <a href="{{ url_for('catalog.admin_tiles') }}" class="btn btn-outline-light">← Back to Catalog</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            {{ csrf_token() }}
+            <div class="mb-3">
+                <label class="form-label">Series</label>
+                <select name="series_id" class="form-select bg-dark text-white" required>
+                    {% for s in series_list %}
+                    <option value="{{ s.id }}">{{ s.collection }} — {{ s.series }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label>Size</label>
+                    <input type="text" name="size" class="form-control bg-dark text-white" placeholder="12x24" required>
+                </div>
+                <div class="col-md-4">
+                    <label>Colour</label>
+                    <input type="text" name="color" class="form-control bg-dark text-white">
+                </div>
+                <div class="col-md-4">
+                    <label>Finish</label>
+                    <input type="text" name="finish" class="form-control bg-dark text-white">
+                </div>
+
+                <div class="col-md-4">
+                    <label>Price ($/sqft)</label>
+                    <input type="number" step="0.01" name="price" class="form-control bg-dark text-white" required>
+                </div>
+                <div class="col-md-4">
+                    <label>SqFt per Box</label>
+                    <input type="number" step="0.01" name="sqft_per_box" class="form-control bg-dark text-white" value="1.0" required>
+                </div>
+                <div class="col-md-4">
+                    <label>Photo</label>
+                    <input type="file" name="photo" class="form-control bg-dark text-white">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success mt-4">Add Tile</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

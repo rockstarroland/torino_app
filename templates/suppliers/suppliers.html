@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Suppliers{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Suppliers</h2>
+
+<div class="mb-3">
+    <a href="{{ url_for('suppliers.add_supplier') }}" class="btn btn-success">+ Add New Supplier</a>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Supplier Name</th>
+            <th>Collection Mapping</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for supplier in suppliers %}
+        <tr>
+            <td><strong>{{ supplier.name }}</strong></td>
+            <td>{{ supplier.collection or '—' }}</td>
+            <td>
+                <a href="{{ url_for('suppliers.edit_supplier', supplier_id=supplier.id) }}" class="btn btn-sm btn-primary">Edit</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="3" class="text-center text-muted">No suppliers yet.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Estimate #{{ estimate.id }}{% endblock %}
+
+{% block content %}
+<h2>Estimate #{{ estimate.id }} – {{ estimate.customer_name }}</h2>
+
+<table class="table">
+    <thead>
+        <tr><th colspan="2">Materials / Tiles</th></tr>
+        <tr><th>Item</th><th>Qty (sq ft)</th><th>Price</th><th>Overage</th><th>Fuel 3%</th><th>Total</th></tr>
+    </thead>
+    <tbody>
+        {% for item in data %}
+        {% if not item.is_labour %}
+        <tr>
+            <td>{{ item.series }} {{ item.size }} {{ item.finish }} {{ item.color }}</td>
+            <td>{{ item.qty }}</td>
+            <td>${{ item.price }}</td>
+            <td>${{ (item.qty * 0.125)|round(2) }}</td>
+            <td>${{ (item.qty * item.price * 0.03)|round(2) }}</td>
+            <td>${{ (item.price * item.qty)|round(2) }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+
+<table class="table">
+    <thead><tr><th colspan="3">Labour Items</th></tr></thead>
+    <tbody>
+        {% for item in data %}
+        {% if item.is_labour %}
+        <tr>
+            <td>{{ item.series }} {{ item.finish }}</td>
+            <td>{{ item.qty }}</td>
+            <td>${{ (item.price * item.qty)|round(2) }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="text-end">
+    <a href="{{ url_for('estimates.estimate_convert_preview', estimate_id=estimate.id) }}" class="btn btn-primary">Convert to Invoice / Project</a>
+</div>
+{% endblock %}

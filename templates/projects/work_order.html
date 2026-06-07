@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Work Order - {{ project.project_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- ACTIONABLE WARNINGS -->
+    {% if not work_data.schedule or not work_data.client.address or not work_data.client.phone %}
+    <div class="alert alert-warning border-2 mb-4">
+        <h5 class="mb-3">⚠️ Missing Information — Please Fix Before Printing</h5>
+
+        {% if not work_data.schedule %}
+        <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-white rounded border">
+            <div>
+                <strong>Install Date</strong> is not scheduled yet
+            </div>
+            <a href="{{ url_for('projects.project_detail', project_id=project.id) }}"
+               class="btn btn-warning btn-sm">Set Install Date →</a>
+        </div>
+        {% endif %}
+
+        {% if not work_data.client.address or not work_data.client.phone %}
+        <div class="d-flex justify-content-between align-items-center p-3 bg-white rounded border">
+            <div>
+                <strong>Client Info</strong> — Address or Phone is missing
+            </div>
+            <a href="{% if project.customer_id %}{{ url_for('customers.edit_customer', customer_id=project.customer_id) }}{% else %}{{ url_for('customers.customers_list') }}{% endif %}"
+               class="btn btn-warning btn-sm">Update Client Info →</a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- HEADER -->
+    <div class="text-center mb-5 border-bottom pb-4">
+        <h1 class="torino-brand display-4">TORINO TILE</h1>
+        <h2 class="fw-bold">INSTALLER WORK ORDER</h2>
+        <div class="d-flex justify-content-between align-items-end mt-3">
+            <div>
+                <strong>WO #:</strong> {{ work_data.work_order_number }}<br>
+                <strong>PO #:</strong> {{ work_data.po_number or '—' }}
+            </div>
+            <div class="text-end">
+                <strong>Date Generated:</strong> {{ work_data.generated_date }}<br>
+                <strong>Project:</strong> {{ work_data.project_name }}
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-7">
+            <h5>Client</h5>
+            <p class="lead mb-1"><strong>{{ work_data.client.name }}</strong></p>
+            <p class="mb-1">{{ work_data.client.address|default('<span class="text-muted">No address on file</span>')|safe }}</p>
+            <p>{{ work_data.client.phone|default('<span class="text-muted">No phone</span>')|safe }}</p>
+        </div>
+        <div class="col-md-5">
+            <h5>Scheduled Install</h5>
+            <p class="fs-3 mb-3">
+                {{ work_data.schedule.strftime('%A, %B %d, %Y') if work_data.schedule else '<span class="text-warning">TBD – Please confirm date</span>' }}
+            </p>
+
+            {% if work_data.installers %}
+            <h6>Assigned Installers</h6>
+            <ul class="list-unstyled">
+                {% for inst in work_data.installers %}
+                <li><strong>{{ inst.name }}</strong> – {{ inst.role }} {% if inst.phone %}({{ inst.phone }}){% endif %}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+
+    <h5 class="border-bottom pb-2">🧱 Materials to Install</h5>
+    <table class="table table-dark table-striped table-hover">
+        <thead>
+            <tr>
+                <th style="width: 65%;">Item Description</th>
+                <th class="text-center">Qty</th>
+                <th class="text-center">Unit</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in work_data.materials %}
+            <tr>
+                <td>{{ m.description }}</td>
+                <td class="text-center">{{ m.qty }}</td>
+                <td class="text-center">{{ m.unit }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-muted text-center">No materials listed</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h5 class="border-bottom pb-2 mt-5">👷 Installer Labour</h5>
+    <table class="table table-dark table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th class="text-center">Qty</th>
+                <th class="text-end">Rate</th>
+                <th class="text-end">Total Pay</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in work_data.labour %}
+            <tr>
+                <td>{{ l.description }}</td>
+                <td class="text-center">{{ l.qty }}</td>
+                <td class="text-end">${{ l.installer_rate }}</td>
+                <td class="text-end">${{ l.total_pay }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot class="table-dark">
+            <tr class="fw-bold">
+                <td colspan="3" class="text-end">TOTAL INSTALLER PAYOUT</td>
+                <td class="text-end">${{ work_data.total_labour_payout }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <h5 class="mt-5">📝 Design Notes / Patterns / Special Instructions</h5>
+    <div class="bg-dark p-4 rounded border border-warning">
+        {{ work_data.notes|default('No additional notes provided.')|nl2br|safe }}
+    </div>
+
+    <div class="row mt-5 pt-5 border-top">
+        <div class="col-md-6">
+            <p class="mb-1"><strong>Installer Signature</strong></p>
+            <div class="border-bottom border-light" style="height: 80px;"></div>
+            <small>Date: ___________________________</small>
+        </div>
+        <div class="col-md-6">
+            <p class="mb-1"><strong>Torino Supervisor / Owner</strong></p>
+            <div class="border-bottom border-light" style="height: 80px;"></div>
+            <small>Date: ___________________________</small>
+        </div>
+    </div>
+
+    <div class="text-center text-muted mt-5 small">
+        This is an official Torino Tile work order.
+    </div>
+</div>
+
+<style>
+    @media print {
+        .alert { display: none !important; }
+        .container { max-width: 100% !important; }
+    }
+</style>
+{% endblock %}

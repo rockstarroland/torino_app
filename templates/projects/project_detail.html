@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Project #{{ project.id }} - {{ project.project_name or 'Untitled Project' }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4" data-bs-theme="dark">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="text-white">Project #{{ project.id }} — {{ project.project_name or 'Untitled Project' }}</h1>
+            <small class="text-secondary">Created: {{ project.created_at.strftime('%B %d, %Y') }}</small>
+        </div>
+        <a href="{{ url_for('projects.projects_list') }}" class="btn btn-secondary">← Back to All Projects</a>
+    </div>
+
+    <div class="card mb-4 border-secondary">
+        <div class="card-header bg-secondary text-white">
+            <strong>Material Status (Order):</strong>
+            {% if po %}
+            <span class="badge bg-{{ 'success' if po.status == 'Completed' else 'warning' if po.status in ['Ordered', 'Confirmed / In transit'] else 'danger' }}">{{ po.status }}</span>
+            {% else %}
+            <span class="text-muted">No linked order yet</span>
+            {% endif %}
+            <span class="float-end">Project Status:
+                <span class="badge bg-{{ 'success' if project.status == 'Completed' else 'primary' }}">{{ project.status }}</span>
+            </span>
+        </div>
+        <div class="card-body bg-body">
+            <div class="row g-4">
+                <div class="col-md-12">
+                    <h5 class="text-white">📅 Overall Project Schedule</h5>
+                    <form method="POST" action="{{ url_for('projects.update_project', project_id=project.id) }}">
+                        {{ csrf_token() }}
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label text-white">Start Date</label>
+                                <input type="date" name="start_date" class="form-control bg-dark text-white" value="{{ project.start_date.isoformat() if project.start_date else '' }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-white">Finish Date</label>
+                                <input type="date" name="finish_date" class="form-control bg-dark text-white" value="{{ project.finish_date.isoformat() if project.finish_date else '' }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-white">Install Scheduled Date</label>
+                                <input type="date" name="install_scheduled_date" class="form-control bg-dark text-white" value="{{ project.install_scheduled_date.isoformat() if project.install_scheduled_date else '' }}">
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Save Project Dates</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="text-white">👷‍♂️ Assigned Trades / Installers</h5>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addInstallerModal">+ Add Trade / Installer</button>
+                    </div>
+
+                    {% if project.assigned_installers %}
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Trade / Role</th>
+                                <th>Installer</th>
+                                <th>Scheduled</th>
+                                <th>Start</th>
+                                <th>Finish</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pi in project.assigned_installers %}
+                            <tr>
+                                <td><strong>{{ pi.role }}</strong></td>
+                                <td>{{ pi.installer.name }}</td>
+                                <td>{{ pi.scheduled_date.strftime('%b %d') if pi.scheduled_date else '—' }}</td>
+                                <td>{{ pi.start_date.strftime('%b %d') if pi.start_date else '—' }}</td>
+                                <td>{{ pi.finish_date.strftime('%b %d') if pi.finish_date else '—' }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('projects.remove_project_installer', project_id=project.id, pi_id=pi.id) }}" style="display:inline;">
+                                        {{ csrf_token() }}
+                                        <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No trades assigned yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Your original ETAs, layout sections, and other content from the original project_detail.html go here -->
+    <!-- Paste the rest of your original project_detail.html content here -->
+
+</div>
+
+<!-- Add Installer Modal -->
+<div class="modal fade" id="addInstallerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <form method="POST" action="{{ url_for('projects.add_project_installer', project_id=project.id) }}">
+                {{ csrf_token() }}
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Assign Trade / Installer</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Installer</label>
+                        <select name="installer_id" class="form-select bg-dark text-white" required>
+                            {% for installer in installers %}
+                            <option value="{{ installer.id }}">{{ installer.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Role / Trade</label>
+                        <select name="role" class="form-select bg-dark text-white" required>
+                            <option value="Tile Installer">Tile Installer</option>
+                            <option value="Plumber">Plumber</option>
+                            <option value="Electrician">Electrician</option>
+                            <option value="Demo Crew">Demo Crew</option>
+                            <option value="Carpenter">Carpenter</option>
+                            <option value="Glass Installer">Glass Installer</option>
+                            <option value="Other">Other (specify below)</option>
+                        </select>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Scheduled Date</label>
+                            <input type="date" name="scheduled_date" class="form-control bg-dark text-white">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" name="start_date" class="form-control bg-dark text-white">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Finish Date</label>
+                            <input type="date" name="finish_date" class="form-control bg-dark text-white">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Assign Trade</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Edit Supplier{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Edit Supplier</h2>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            {{ csrf_token() }}
+            <div class="mb-3">
+                <label class="form-label">Supplier Name</label>
+                <input type="text" name="name" value="{{ supplier.name }}" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Collection Mapping</label>
+                <input type="text" name="collection" value="{{ supplier.collection or '' }}" class="form-control">
+                <small class="text-muted">This is the collection name used in the tile catalog.</small>
+            </div>
+            <button type="submit" class="btn btn-success">Save Changes</button>
+            <a href="{{ url_for('suppliers.suppliers_list') }}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
