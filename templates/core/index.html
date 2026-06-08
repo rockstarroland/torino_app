@@ -3,85 +3,83 @@
 
 {% block content %}
 <div class="container py-4">
-    <h1 class="torino-brand display-4 text-center mb-5">TORINO TILE DASHBOARD</h1>
+    <h1 class="torino-brand display-4 text-center mb-4">TORINO TILE DASHBOARD</h1>
+    <p class="text-center text-muted mb-5">Welcome back, Roland</p>
+
     <div class="row g-4">
         <!-- Pending Orders -->
         <div class="col-md-3">
             <a href="{{ url_for('orders.orders_list') }}" class="text-decoration-none">
-                <div class="card text-center h-100 shadow-sm">
+                <div class="card text-center h-100 shadow-sm border-primary">
                     <div class="card-body">
-                        <h2 class="text-primary mb-1">{{ pending }}</h2>
+                        <h2 class="text-primary mb-1">{{ pending_orders or 0 }}</h2>
                         <h5 class="text-light mb-1">Pending Orders</h5>
                         <small class="text-light opacity-75">To be ordered</small>
                     </div>
                 </div>
             </a>
         </div>
-        <!-- Overdue -->
+
+        <!-- Active Projects -->
+        <div class="col-md-3">
+            <a href="{{ url_for('projects.projects_list') }}" class="text-decoration-none">
+                <div class="card text-center h-100 shadow-sm border-success">
+                    <div class="card-body">
+                        <h2 class="text-success mb-1">{{ active_projects or 0 }}</h2>
+                        <h5 class="text-light mb-1">Active Projects</h5>
+                        <small class="text-light opacity-75">In progress</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Overdue / Needs Attention -->
         <div class="col-md-3">
             <a href="{{ url_for('orders.orders_list') }}" class="text-decoration-none">
                 <div class="card text-center h-100 shadow-sm border-warning">
                     <div class="card-body">
-                        <h2 class="text-warning mb-1">{{ overdue }}</h2>
-                        <h5 class="text-light mb-1">Overdue Orders</h5>
-                        <small class="text-light opacity-75">Needs immediate attention</small>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <!-- Active Projects -->
-        <div class="col-md-3">
-            <a href="{{ url_for('projects.projects_list') }}" class="text-decoration-none">
-                <div class="card text-center h-100 shadow-sm">
-                    <div class="card-body">
-                        <h2 class="text-success mb-1">{{ active_projects }}</h2>
-                        <h5 class="text-light mb-1">Active Projects</h5>
-                        <small class="text-light opacity-75">In progress or scheduled</small>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <!-- Total Needing Attention -->
-        <div class="col-md-3">
-            <a href="{{ url_for('orders.orders_list') }}" class="text-decoration-none">
-                <div class="card text-center h-100 shadow-sm border-danger">
-                    <div class="card-body">
-                        <h2 class="text-danger mb-1">{{ total_needing_attention }}</h2>
+                        <h2 class="text-warning mb-1">{{ needs_attention or 0 }}</h2>
                         <h5 class="text-light mb-1">Needs Attention</h5>
-                        <small class="text-light opacity-75">Pending + Overdue</small>
+                        <small class="text-light opacity-75">Overdue or urgent</small>
                     </div>
                 </div>
             </a>
         </div>
-    </div>
-    <!-- Pipeline Section -->
-    <div class="mt-5">
-        <h4 class="text-light mb-3">📦 Order Pipeline</h4>
-        <div class="row g-3">
-            {% for status in ORDER_STATUSES %}
-                {% set color = 'danger' if status == 'To be ordered' else
-                               'success' if status == 'Ordered' else
-                               'primary' if status == 'Confirmed / In transit' else
-                               'info' if status == 'In Wpg / pick ups' else
-                               'warning' if status == 'At Torino / ready for client pickup' else
-                               'success' if status in ['Delivered to site / picked up by client', 'Completed'] else 'secondary' %}
-                <div class="col-md-3 col-sm-6">
-                    <a href="{{ url_for('orders.orders_list') }}?status={{ status }}" class="text-decoration-none">
-                        <div class="card text-center h-100 shadow-sm border-{{ color }}">
-                            <div class="card-body">
-                                <h5 class="text-light mb-1">{{ status }}</h5>
-                            </div>
-                        </div>
-                    </a>
+
+        <!-- Total Revenue (this month) -->
+        <div class="col-md-3">
+            <div class="card text-center h-100 shadow-sm border-info">
+                <div class="card-body">
+                    <h2 class="text-info mb-1">${{ total_revenue or 0 }}</h2>
+                    <h5 class="text-light mb-1">Revenue This Month</h5>
+                    <small class="text-light opacity-75">59% growth YOY</small>
                 </div>
-            {% endfor %}
+            </div>
         </div>
     </div>
-    <!-- Quick Links -->
-    <div class="text-center mt-5">
-        <a href="{{ url_for('projects.project_calendar') }}" class="btn btn-outline-primary btn-lg me-3">📅 View Full Calendar</a>
-        <a href="{{ url_for('projects.projects_list') }}" class="btn btn-outline-light btn-lg">📋 All Projects</a>
-        <a href="{{ url_for('orders.orders_list') }}" class="btn btn-outline-light btn-lg ms-3">📦 All Orders</a>
+
+    <!-- Quick Actions -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4 class="text-light mb-3">Quick Actions</h4>
+            <div class="d-flex flex-wrap gap-3">
+                <a href="{{ url_for('estimates.estimate_builder') }}" class="btn btn-success btn-lg">+ New Estimate</a>
+                <a href="{{ url_for('projects.projects_list') }}" class="btn btn-outline-light btn-lg">View All Projects</a>
+                <a href="{{ url_for('catalog.admin_tiles') }}" class="btn btn-outline-light btn-lg">Browse Catalog</a>
+                <a href="{{ url_for('orders.orders_list') }}" class="btn btn-outline-light btn-lg">Manage Orders</a>
+                <a href="{{ url_for('projects.project_calendar') }}" class="btn btn-outline-primary btn-lg">📅 Calendar</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="mt-5">
+        <h4 class="text-light mb-3">Recent Activity</h4>
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted">Recent estimates, orders, and projects will appear here soon...</p>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
